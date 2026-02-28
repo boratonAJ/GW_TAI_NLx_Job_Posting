@@ -1,5 +1,12 @@
 # GW_TAI_NLx_Job_Posting
 
+## Guide & Datasets
+
+- Case_Table = Core metadata (jurisdiction, claims, parties, outcomes)
+- Docket_Table = Procedural timeline events
+- Document_Table = Filed documents & attachments
+- Secondary_Source_Coverage_Table = Media or external references
+
 Structuring National Labor Exchange (NLx) Job Posting Data.
 
 ## Project Structure
