@@ -60,3 +60,18 @@ python src/data/make_dataset.py
 - Keep exploratory notebooks in `notebooks/`.
 - Save trained models to `models/`.
 - Save plots and figures to `reports/figures/`.
+
+## Hackathon Automation
+
+Use the end-to-end hackathon scripts in `hackathon/`.
+
+```bash
+python -m hackathon.scripts.run_all
+```
+
+Or run step-by-step:
+
+```bash
+python -m hackathon.scripts.prepare_data
+python -m hackathon.scripts.run_local
+```
