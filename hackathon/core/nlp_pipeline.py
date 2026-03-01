@@ -148,3 +148,101 @@ def build_skill_profiles_from_mentions(mentions: pd.DataFrame) -> pd.DataFrame:
     )
 
     return skill_profiles
+
+
+EDUCATION_PATTERNS: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"\b(ph\.?d|doctorate|doctoral)\b", re.IGNORECASE), "Doctorate"),
+    (re.compile(r"\b(master'?s|mba|m\.s\.|m\s?s\b|m\.a\.|m\s?a\b)\b", re.IGNORECASE), "Master's Degree"),
+    (re.compile(r"\b(bachelor'?s|b\.s\.|b\s?s\b|b\.a\.|b\s?a\b|undergraduate degree)\b", re.IGNORECASE), "Bachelor's Degree"),
+    (re.compile(r"\bassociate'?s\b", re.IGNORECASE), "Associate Degree"),
+    (re.compile(r"\b(high school|ged|secondary school)\b", re.IGNORECASE), "High School Diploma/GED"),
+    (re.compile(r"\b(certification|certificate)\b", re.IGNORECASE), "Certification"),
+]
+
+EXPERIENCE_PATTERNS: list[re.Pattern] = [
+    re.compile(
+        r"\b(\d{1,2})\s*(?:\+|plus)?\s*(?:-|to)?\s*(\d{1,2})?\s*(years|year|yrs|yr|months|month|mos|mo)\b",
+        re.IGNORECASE,
+    ),
+]
+
+ENTRY_LEVEL_PATTERN = re.compile(
+    r"\b(entry level|no experience|0\s*years?|fresh graduate|new grad)\b",
+    re.IGNORECASE,
+)
+
+
+def _normalize_existing_requirement(value: str) -> str:
+    text = str(value).strip()
+    if not text or text.lower() in {"nan", "none", "null"}:
+        return ""
+    return text
+
+
+def _infer_education_from_text(text: str) -> str:
+    for pattern, label in EDUCATION_PATTERNS:
+        if pattern.search(text):
+            return label
+    return ""
+
+
+def _infer_experience_from_text(text: str) -> str:
+    if ENTRY_LEVEL_PATTERN.search(text):
+        return "Entry level / no experience"
+
+    for pattern in EXPERIENCE_PATTERNS:
+        match = pattern.search(text)
+        if not match:
+            continue
+
+        minimum = match.group(1)
+        maximum = match.group(2)
+        unit = match.group(3).lower()
+        normalized_unit = "years" if "year" in unit or "yr" in unit else "months"
+
+        if maximum:
+            return f"{minimum}-{maximum} {normalized_unit}"
+        return f"{minimum} {normalized_unit}"
+
+    return ""
+
+
+def infer_education_and_experience(jobs_clean: pd.DataFrame) -> pd.DataFrame:
+    required_columns = [
+        "system_job_id",
+        "title",
+        "description",
+        "requirements_min_education",
+        "requirements_experience",
+    ]
+    working = jobs_clean.copy()
+    for column in required_columns:
+        if column not in working.columns:
+            working[column] = ""
+
+    rows: list[dict[str, str]] = []
+    for _, row in working.iterrows():
+        title = str(row.get("title", ""))
+        description = str(row.get("description", ""))
+        raw_education = _normalize_existing_requirement(row.get("requirements_min_education", ""))
+        raw_experience = _normalize_existing_requirement(row.get("requirements_experience", ""))
+
+        source_text = f"{title} {description}"
+
+        inferred_education = raw_education or _infer_education_from_text(source_text)
+        inferred_experience = raw_experience or _infer_experience_from_text(source_text)
+
+        education_source = "dataset" if raw_education else ("nlp_inferred" if inferred_education else "not_specified")
+        experience_source = "dataset" if raw_experience else ("nlp_inferred" if inferred_experience else "not_specified")
+
+        rows.append(
+            {
+                "system_job_id": str(row.get("system_job_id", "")),
+                "education_display": inferred_education,
+                "education_source": education_source,
+                "experience_display": inferred_experience,
+                "experience_source": experience_source,
+            }
+        )
+
+    return pd.DataFrame(rows)

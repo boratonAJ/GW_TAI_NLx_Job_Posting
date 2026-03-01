@@ -75,3 +75,15 @@ Or run step-by-step:
 python -m hackathon.scripts.prepare_data
 python -m hackathon.scripts.run_local
 ```
+
+## Data Artifacts
+
+Running `python -m hackathon.scripts.prepare_data` prepares these files:
+
+- Raw inputs:
+	- `data/raw/colorado.csv`
+	- `data/raw/colorado_processed.csv`
+- Processed NLP artifacts:
+	- `data/processed/nlp_skill_mentions.csv`
+	- `data/processed/nlp_skill_profiles.csv`
+	- `data/processed/nlp_requirements_profile.csv` (education and experience preprocessing output)

@@ -4,24 +4,32 @@ from hackathon.core.matching import find_matching_jobs
 
 
 MOC_DICTIONARY = {
-    "11B": ("Infantry", "leadership team management operations security"),
-    "68W": ("Combat Medic", "patient care emergency medical first aid healthcare"),
+    "11B": ("Infantry Soldier", "leadership team management operations security patrol coordination"),
+    "68W": ("Combat Medic", "patient care emergency medical first aid healthcare nursing triage clinical"),
     "25U": (
         "Signal Support Specialist",
-        "communications network IT systems technical",
+        "communications network IT systems radio telecommunications",
     ),
     "92A": (
-        "Automated Logistical Specialist",
-        "inventory supply chain logistics warehouse",
+        "Logistical Specialist",
+        "inventory supply chain logistics warehouse procurement management",
     ),
-    "31B": ("Military Police", "law enforcement security patrol investigation"),
-    "25B": ("IT Specialist", "information technology network systems cybersecurity"),
-    "42A": ("Human Resources Specialist", "HR recruiting employee relations administration"),
-    "88M": ("Motor Transport Operator", "transportation driving logistics delivery"),
-    "15T": ("Helicopter Repairer", "aircraft maintenance mechanical aviation repair"),
-    "35F": ("Intelligence Analyst", "analysis data intelligence research reporting"),
-    "12B": ("Combat Engineer", "construction engineering project management"),
-    "74D": ("CBRN Specialist", "safety environmental hazmat compliance"),
+    "31B": ("Military Police", "law enforcement security patrol investigation compliance safety"),
+    "25B": ("IT Specialist", "information technology network systems cybersecurity database cloud"),
+    "42A": ("Human Resources Specialist", "HR recruiting employee relations administration benefits payroll"),
+    "88M": ("Motor Transport Operator", "transportation driving logistics delivery fleet routing"),
+    "15T": ("Helicopter Repairer", "aircraft maintenance mechanical aviation repair inspection"),
+    "35F": ("Intelligence Analyst", "analysis intelligence data research reporting assessment"),
+    "12B": ("Combat Engineer", "construction engineering project management infrastructure planning"),
+    "74D": ("CBRN Specialist", "safety environmental hazmat compliance chemical emergency"),
+    "56M": ("Chaplain Assistant", "counseling mental health social work community support"),
+    "91B": ("Vehicle Mechanic", "automotive mechanical repair maintenance diagnostics fleet"),
+    "68C": ("Practical Nursing Specialist", "nursing patient care clinical LPN healthcare treatment"),
+    "35L": ("Counterintelligence Agent", "investigation security analysis intelligence law enforcement"),
+    "25S": ("Satellite Comm Operator", "telecommunications satellite systems engineering IT network"),
+    "13F": ("Fire Support Specialist", "coordination communications analysis operations planning"),
+    "19D": ("Cavalry Scout", "reconnaissance operations security intelligence coordination surveillance"),
+    "12Y": ("Geospatial Engineer", "GIS mapping data analysis geospatial systems spatial engineering"),
 }
 
 
@@ -39,6 +47,7 @@ def veteran_full_match(
     jobs_clean: pd.DataFrame,
     skill_profiles: pd.DataFrame,
     top_n: int = 8,
+    matching_index: tuple | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, str]:
     code = moc_code.upper().strip()
 
@@ -54,6 +63,7 @@ def veteran_full_match(
         jobs_clean=jobs_clean,
         skill_profiles=skill_profiles,
         top_n=top_n,
+        matching_index=matching_index,
     )
 
     return direct_matches, skill_matches, title

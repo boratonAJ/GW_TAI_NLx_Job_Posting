@@ -205,3 +205,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Extracted local raw dataset artifacts
+data/raw/colorado.csv
+data/raw/colorado_processed.csv
+data/raw/__MACOSX/
+
+# Local machine artifacts
+.DS_Store
+data/.DS_Store
+docs/.DS_Store
+
+# Runtime analytics outputs
+data/processed/analytics/
+
+# Temporary Office lock files
+docs/~$*.docx
