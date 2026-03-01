@@ -162,5 +162,3 @@ python -m hackathon.scripts.run_colab
 - Akshara Tarikere
 - Olabode Ajayi
 - Ramin Gamzaev
-- Ramin Gamzaev 
-
