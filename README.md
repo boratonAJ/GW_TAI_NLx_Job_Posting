@@ -1,7 +1,5 @@
 # Colorado Workforce Intelligence Platform
 
-Done by: Akshara Tarikere, Olabode Ajayi, Ramin Gamzaev 
-
 GW Hackathon 2026 project for NLx Colorado job postings, combining structured data processing, NLP skill extraction, semantic job matching, veteran translation, market intelligence analysis, recruiter tools, and usage analytics.
 
 ## What This Project Does
@@ -158,3 +156,11 @@ python -m hackathon.scripts.run_colab
 - Ghost-job labels depend on source labeling assumptions.
 - Veteran mapping is approximate and dictionary coverage is partial.
 - The dataset is a snapshot and not real-time labor-market telemetry.
+
+## Authors 
+
+- Akshara Tarikere
+- Olabode Ajayi
+- Ramin Gamzaev
+- Ramin Gamzaev 
+
