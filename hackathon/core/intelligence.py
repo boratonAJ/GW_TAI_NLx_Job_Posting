@@ -70,6 +70,8 @@ def analyze_ghost_job_language(jobs_clean: pd.DataFrame) -> tuple[pd.DataFrame |
 
     ghost_text = " ".join(ghost_jobs["description"].astype(str).tolist())
     real_text = " ".join(real_jobs["description"].astype(str).tolist())
+    if not ghost_text.strip() or not real_text.strip():
+        return None, None
 
     vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2), max_features=5000)
     vectorizer.fit([ghost_text, real_text])
@@ -98,28 +100,53 @@ def analyze_ghost_job_language(jobs_clean: pd.DataFrame) -> tuple[pd.DataFrame |
 def detect_credential_inflation(jobs_clean: pd.DataFrame) -> pd.DataFrame:
     education_rank = {
         "No Formal Education Required": 0,
-        "High School Diploma or GED": 1,
+        "High School Diploma Or Ged": 1,
         "Some College Coursework Completed": 2,
-        "Associate's Degree": 3,
-        "Bachelor's Degree": 4,
-        "Master's Degree": 5,
+        "Associate'S Degree": 3,
+        "Associates Degree": 3,
+        "Associate Degree": 3,
+        "Bachelor'S Degree": 4,
+        "Bachelors Degree": 4,
+        "Bachelor Degree": 4,
+        "Master'S Degree": 5,
+        "Masters Degree": 5,
+        "Master Degree": 5,
         "Doctoral Degree": 6,
+        "Phd": 6,
         "Post-Doctoral Training": 7,
+        "Post Doctoral Training": 7,
     }
-    inverse_rank = {value: key for key, value in education_rank.items()}
+    inverse_rank = {
+        0: "No Formal Education Required",
+        1: "High School Diploma or GED",
+        2: "Some College Coursework Completed",
+        3: "Associate's Degree",
+        4: "Bachelor's Degree",
+        5: "Master's Degree",
+        6: "Doctoral Degree",
+        7: "Post-Doctoral Training",
+    }
 
     required_columns = {"requirements_min_education", "classifications_onet_code"}
     if jobs_clean.empty or not required_columns.issubset(jobs_clean.columns):
         return pd.DataFrame()
 
-    eligible = jobs_clean[
-        jobs_clean["requirements_min_education"].isin(education_rank.keys())
-        & (jobs_clean["classifications_onet_code"].astype(str).str.strip() != "")
+    working = jobs_clean.copy()
+    working["edu_normalized"] = (
+        working["requirements_min_education"]
+        .astype(str)
+        .str.strip()
+        .str.title()
+    )
+
+    eligible = working[
+        working["edu_normalized"].isin(education_rank.keys())
+        & (working["classifications_onet_code"].astype(str).str.strip() != "")
     ].copy()
     if eligible.empty:
         return pd.DataFrame()
 
-    eligible["edu_level"] = eligible["requirements_min_education"].map(education_rank)
+    eligible["edu_level"] = eligible["edu_normalized"].map(education_rank)
 
     flagged_rows: list[dict] = []
     for onet_code, group in eligible.groupby("classifications_onet_code"):
@@ -137,6 +164,7 @@ def detect_credential_inflation(jobs_clean: pd.DataFrame) -> pd.DataFrame:
                         "City": row.get("city", ""),
                         "Required Education": row.get("requirements_min_education", ""),
                         "Minimum in Same Field": inverse_rank.get(int(minimum), "Unknown"),
+                        "Gap (levels)": gap,
                         "Education Gap (levels)": gap,
                         "O*NET Code": onet_code,
                         "Salary": format_salary(
@@ -149,7 +177,7 @@ def detect_credential_inflation(jobs_clean: pd.DataFrame) -> pd.DataFrame:
     if not flagged_rows:
         return pd.DataFrame()
 
-    return pd.DataFrame(flagged_rows).sort_values("Education Gap (levels)", ascending=False).head(150)
+    return pd.DataFrame(flagged_rows).sort_values("Gap (levels)", ascending=False).head(150)
 
 
 def build_salary_by_city(jobs_clean: pd.DataFrame) -> pd.DataFrame:
@@ -195,7 +223,8 @@ def score_description(
         breakdown["Description Length"] = f"Needs work ({word_count} words). Too short or too long."
 
     try:
-        salary = float(salary_min) if str(salary_min).strip() not in {"", "nan", "0", "0.0"} else 0
+        salary_text = str(salary_min).replace(",", "").strip()
+        salary = float(salary_text) if salary_text not in {"", "nan", "0", "0.0"} else 0
         if salary > 0:
             score += 30
             breakdown["Salary Transparency"] = "Salary listed. Improves qualified application volume."

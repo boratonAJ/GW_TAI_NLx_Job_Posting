@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 
 from hackathon.core.matching import find_matching_jobs
@@ -38,7 +40,8 @@ def find_direct_moc_matches(moc_code: str, jobs_clean: pd.DataFrame) -> pd.DataF
     if not code:
         return jobs_clean.head(0).copy()
 
-    matches = jobs_clean[jobs_clean["moc_codes"].astype(str).str.upper().str.contains(code, na=False)]
+    pattern = re.escape(code)
+    matches = jobs_clean[jobs_clean["moc_codes"].astype(str).str.upper().str.contains(pattern, na=False, regex=True)]
     return matches.copy()
 
 

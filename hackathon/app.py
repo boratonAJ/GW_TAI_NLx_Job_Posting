@@ -523,6 +523,36 @@ with tab2:
         else:
             st.info("No skill demand data available yet.")
 
+        st.markdown("---")
+        st.subheader("Skills by Taxonomy Source")
+        taxonomy_required = {"Taxonomy Source", "Taxonomy Skill"}
+        if taxonomy_required.issubset(processed_raw.columns):
+            source_left, source_right = st.columns(2)
+            with source_left:
+                esco_series = processed_raw[
+                    processed_raw["Taxonomy Source"].astype(str).str.upper().str.contains("ESCO", na=False)
+                ]["Taxonomy Skill"].value_counts().head(15)
+                if len(esco_series) > 0:
+                    esco_df = esco_series.reset_index()
+                    esco_df.columns = ["Skill", "Count"]
+                    st.markdown("**ESCO Taxonomy**")
+                    st.dataframe(esco_df, hide_index=True, use_container_width=True)
+                else:
+                    st.info("No ESCO-tagged taxonomy rows found.")
+            with source_right:
+                onet_series = processed_raw[
+                    processed_raw["Taxonomy Source"].astype(str).str.upper().str.contains(r"ONET|O\\.NET", na=False, regex=True)
+                ]["Taxonomy Skill"].value_counts().head(15)
+                if len(onet_series) > 0:
+                    onet_df = onet_series.reset_index()
+                    onet_df.columns = ["Skill", "Count"]
+                    st.markdown("**O*NET Taxonomy**")
+                    st.dataframe(onet_df, hide_index=True, use_container_width=True)
+                else:
+                    st.info("No O*NET-tagged taxonomy rows found.")
+        else:
+            st.info("Taxonomy source columns are unavailable in the current raw processed dataset.")
+
     with right_panel:
         st.subheader("Top Skill Snapshot")
         for rank, row in enumerate(skill_df.head(5).itertuples(index=False), start=1):
@@ -1183,6 +1213,15 @@ then TF-IDF and cosine similarity compare your input against those profiles.
 - Credential inflation detection by O*NET grouping
 - Salary fairness benchmarking by city and role
 - Education-to-job alignment from CIP codes
+
+**Compatibility and robustness updates:**
+- Uses lowercase resampling alias (`h`) to avoid pandas hourly deprecation warnings.
+- Uses escaped O*NET regex (`O\.NET`) for literal-dot matching in taxonomy source filters.
+- Uses explicit dataframe column naming after `value_counts().reset_index()`.
+- Guards ghost-language vectorization when joined text is empty.
+- Normalizes education strings with alias mapping for credential inflation analysis.
+- Parses comma-formatted salary text in recruiter quality scoring.
+- Escapes MOC codes in direct-match regex search.
 
 **Limitations:**
 - Job postings are not hiring outcomes.
