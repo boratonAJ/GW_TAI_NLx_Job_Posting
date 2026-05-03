@@ -2,6 +2,10 @@
 
 GW Hackathon 2026 project for NLx Colorado job postings, combining structured data processing, NLP skill extraction, semantic job matching, veteran translation, market intelligence analysis, recruiter tools, and usage analytics.
 
+Open the platform here: https: https://huggingface.co/spaces/aksharatarikere/colorado-workforce
+
+The application runs fully in your browser. No installation needed to view it.
+
 ## What This Project Does
 
 - Builds reusable NLP artifacts from NLx job data.
